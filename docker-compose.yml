@@ -1,0 +1,163 @@
+services:
+  # ─── Infrastructure ────────────────────────────────────────────
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.1.1
+    command:
+      - redpanda start
+      - --smp 1
+      - --memory 512M
+      - --overprovisioned
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
+    ports:
+      - "19092:19092"
+      - "18082:18082"
+      - "9644:9644"
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redpanda-init:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.1.1
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    entrypoint: /bin/bash
+    command: -c "rpk topic create obs.logs obs.traces obs.metrics --partitions 3 --replicas 1 --brokers redpanda:9092 || true"
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./infra/clickhouse/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      CLICKHOUSE_DB: observability
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:v1.99.0
+    ports:
+      - "8428:8428"
+    volumes:
+      - vm_data:/victoria-metrics-data
+    command:
+      - "-retentionPeriod=30d"
+      - "-httpListenAddr=:8428"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8428/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.96.0
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8888:8888"
+    volumes:
+      - ./infra/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      victoriametrics:
+        condition: service_healthy
+
+  # ─── Application Services ──────────────────────────────────────
+  ingest-service:
+    build:
+      context: .
+      dockerfile: apps/ingest-service/Dockerfile
+    ports:
+      - "4400:4400"
+    environment:
+      KAFKA_BROKERS: redpanda:9092
+      INGEST_SERVICE_PORT: "4400"
+    depends_on:
+      redpanda:
+        condition: service_healthy
+
+  consumer:
+    build:
+      context: .
+      dockerfile: apps/ingest-service/Dockerfile
+    command: ["node", "dist/consumer.js"]
+    environment:
+      KAFKA_BROKERS: redpanda:9092
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_DB: observability
+      VICTORIA_METRICS_URL: http://victoriametrics:8428
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+
+  query-service:
+    build:
+      context: .
+      dockerfile: apps/query-service/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_DB: observability
+      VICTORIA_METRICS_URL: http://victoriametrics:8428
+      QUERY_SERVICE_PORT: "3001"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      victoriametrics:
+        condition: service_healthy
+
+  alert-service:
+    build:
+      context: .
+      dockerfile: apps/alert-service/Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_DB: observability
+      VICTORIA_METRICS_URL: http://victoriametrics:8428
+      ALERT_SERVICE_PORT: "3002"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      victoriametrics:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - query-service
+      - alert-service
+
+volumes:
+  redpanda_data:
+  clickhouse_data:
+  vm_data:

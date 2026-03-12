@@ -1,0 +1,38 @@
+{
+  "name": "@obs/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/api-logs": "^0.52.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.47.0",
+    "@opentelemetry/exporter-logs-otlp-grpc": "^0.52.0",
+    "@opentelemetry/exporter-metrics-otlp-grpc": "^0.52.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.52.0",
+    "@opentelemetry/resources": "^1.25.0",
+    "@opentelemetry/sdk-logs": "^0.52.0",
+    "@opentelemetry/sdk-metrics": "^1.25.0",
+    "@opentelemetry/sdk-node": "^0.52.0",
+    "@opentelemetry/sdk-trace-node": "^1.25.0",
+    "@opentelemetry/semantic-conventions": "^1.25.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
