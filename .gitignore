@@ -1,0 +1,27 @@
+node_modules/
+dist/
+.turbo/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes
+docker-data/
+
+# Coverage
+coverage/
+
+# Logs
+*.log

@@ -1,0 +1,59 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 1024
+  resource:
+    attributes:
+      - key: collector.name
+        value: "obs-gateway"
+        action: upsert
+
+exporters:
+  kafka/logs:
+    protocol_version: "2.6.0"
+    brokers:
+      - redpanda:9092
+    topic: obs.logs
+    encoding: otlp_json
+
+  kafka/traces:
+    protocol_version: "2.6.0"
+    brokers:
+      - redpanda:9092
+    topic: obs.traces
+    encoding: otlp_json
+
+  kafka/metrics:
+    protocol_version: "2.6.0"
+    brokers:
+      - redpanda:9092
+    topic: obs.metrics
+    encoding: otlp_json
+
+  prometheusremotewrite:
+    endpoint: http://victoriametrics:8428/api/v1/write
+    resource_to_telemetry_conversion:
+      enabled: true
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [kafka/logs]
+    traces:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [kafka/traces]
+    metrics:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [kafka/metrics, prometheusremotewrite]
