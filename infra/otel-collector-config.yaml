@@ -18,25 +18,31 @@ processors:
 
 exporters:
   kafka/logs:
-    protocol_version: "2.6.0"
+    protocol_version: "3.5.0"
     brokers:
       - redpanda:9092
     topic: obs.logs
     encoding: otlp_json
+    metadata:
+      full: false
 
   kafka/traces:
-    protocol_version: "2.6.0"
+    protocol_version: "3.5.0"
     brokers:
       - redpanda:9092
     topic: obs.traces
     encoding: otlp_json
+    metadata:
+      full: false
 
   kafka/metrics:
-    protocol_version: "2.6.0"
+    protocol_version: "3.5.0"
     brokers:
       - redpanda:9092
     topic: obs.metrics
     encoding: otlp_json
+    metadata:
+      full: false
 
   prometheusremotewrite:
     endpoint: http://victoriametrics:8428/api/v1/write

@@ -81,6 +81,7 @@ services:
         condition: service_healthy
       victoriametrics:
         condition: service_healthy
+    restart: on-failure
 
 volumes:
   redpanda_data:
