@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ObsLens — How It Works</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-card-hover: #1a1a26;
+      --border: #1e1e2e;
+      --border-accent: #2d2d44;
+      --text: #e4e4ef;
+      --text-muted: #8888a4;
+      --text-dim: #55556a;
+      --brand: #6366f1;
+      --brand-light: #818cf8;
+      --brand-glow: rgba(99, 102, 241, 0.15);
+      --green: #34d399;
+      --green-bg: rgba(52, 211, 153, 0.1);
+      --blue: #60a5fa;
+      --blue-bg: rgba(96, 165, 250, 0.1);
+      --amber: #fbbf24;
+      --amber-bg: rgba(251, 191, 36, 0.1);
+      --red: #f87171;
+      --red-bg: rgba(248, 113, 113, 0.1);
+      --purple: #a78bfa;
+      --purple-bg: rgba(167, 139, 250, 0.1);
+      --cyan: #22d3ee;
+      --cyan-bg: rgba(34, 211, 238, 0.1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Hero ──────────────────────────────────────── */
+    .hero {
+      position: relative;
+      padding: 100px 24px 80px;
+      text-align: center;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, var(--brand-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 100px;
+      background: var(--brand-glow);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      font-size: 13px;
+      color: var(--brand-light);
+      font-weight: 500;
+      margin-bottom: 24px;
+      letter-spacing: 0.5px;
+    }
+    .hero h1 {
+      font-size: clamp(40px, 6vw, 72px);
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #fff 30%, var(--brand-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+    }
+    .hero p {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 0 auto 40px;
+    }
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+    }
+    .hero-cta:hover { background: var(--brand-light); transform: translateY(-1px); }
+
+    /* ─── Container ──────────────────────────────────── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ─── Sections ──────────────────────────────────── */
+    section {
+      padding: 80px 0;
+    }
+    section + section {
+      border-top: 1px solid var(--border);
+    }
+    .section-label {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--brand-light);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+    .section-desc {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin-bottom: 48px;
+    }
+
+    /* ─── Pipeline Flow ──────────────────────────────── */
+    .pipeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+    .pipeline-step {
+      display: flex;
+      gap: 28px;
+      align-items: flex-start;
+      position: relative;
+      padding-bottom: 48px;
+    }
+    .pipeline-step:last-child { padding-bottom: 0; }
+    .pipeline-step::before {
+      content: '';
+      position: absolute;
+      left: 23px;
+      top: 48px;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--border-accent), var(--border));
+    }
+    .pipeline-step:last-child::before { display: none; }
+    .step-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .step-content { flex: 1; padding-top: 4px; }
+    .step-content h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .step-content p {
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    .step-tech {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+    }
+    .step-tech .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* ─── Architecture Diagram ──────────────────────── */
+    .arch-diagram {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 32px;
+      margin-top: 16px;
+      overflow-x: auto;
+    }
+    .arch-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .arch-row:last-child { margin-bottom: 0; }
+    .arch-node {
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      border: 1px solid;
+      min-width: 140px;
+      transition: transform 0.2s;
+    }
+    .arch-node:hover { transform: translateY(-2px); }
+    .arch-node.app { background: var(--brand-glow); border-color: rgba(99, 102, 241, 0.3); color: var(--brand-light); }
+    .arch-node.collector { background: var(--cyan-bg); border-color: rgba(34, 211, 238, 0.3); color: var(--cyan); }
+    .arch-node.broker { background: var(--amber-bg); border-color: rgba(251, 191, 36, 0.3); color: var(--amber); }
+    .arch-node.storage { background: var(--green-bg); border-color: rgba(52, 211, 153, 0.3); color: var(--green); }
+    .arch-node.service { background: var(--blue-bg); border-color: rgba(96, 165, 250, 0.3); color: var(--blue); }
+    .arch-node.ui { background: var(--purple-bg); border-color: rgba(167, 139, 250, 0.3); color: var(--purple); }
+    .arch-arrow {
+      font-size: 20px;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+    .arch-arrow.down {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      font-size: 24px;
+    }
+    .arch-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-align: center;
+      margin-top: -16px;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ─── Feature Cards ──────────────────────────────── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: all 0.25s;
+    }
+    .feature-card:hover {
+      border-color: var(--border-accent);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+    }
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+    .feature-card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .feature-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* ─── SDK Section ───────────────────────────────── */
+    .code-block {
+      background: #0d0d14;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 28px;
+      overflow-x: auto;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', monospace;
+      font-size: 13.5px;
+      line-height: 1.8;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .code-block .kw { color: var(--purple); }
+    .code-block .fn { color: var(--blue); }
+    .code-block .str { color: var(--green); }
+    .code-block .cmt { color: var(--text-dim); font-style: italic; }
+    .code-block .obj { color: var(--amber); }
+    .code-block .num { color: var(--red); }
+
+    .sdk-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+    .sdk-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+    }
+    .sdk-card h4 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sdk-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+    .sdk-card code {
+      display: block;
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: var(--bg);
+      border-radius: 8px;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    /* ─── Quickstart ─────────────────────────────────── */
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      counter-reset: step;
+    }
+    .qs-step {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      counter-increment: step;
+    }
+    .qs-number {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--brand-glow);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--brand-light);
+      flex-shrink: 0;
+    }
+    .qs-content { flex: 1; }
+    .qs-content h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .qs-content p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .qs-cmd {
+      display: inline-block;
+      padding: 8px 16px;
+      background: #0d0d14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+      font-size: 13px;
+      color: var(--green);
+    }
+
+    /* ─── Tech Stack ──────────────────────────────────── */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .tech-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: border-color 0.2s;
+    }
+    .tech-item:hover { border-color: var(--border-accent); }
+    .tech-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .tech-item .tech-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .tech-item .tech-role {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    /* ─── Decision Table ─────────────────────────────── */
+    .decision-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      font-size: 14px;
+    }
+    .decision-table th {
+      text-align: left;
+      padding: 14px 20px;
+      background: rgba(99, 102, 241, 0.05);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .decision-table td {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      vertical-align: top;
+    }
+    .decision-table tr:last-child td { border-bottom: none; }
+    .decision-table td:first-child {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ─── Footer ──────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+    footer a { color: var(--brand-light); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ─── Responsive ──────────────────────────────────── */
+    @media (max-width: 640px) {
+      .hero { padding: 60px 16px 50px; }
+      section { padding: 50px 0; }
+      .arch-row { flex-direction: column; align-items: center; }
+      .arch-arrow { transform: rotate(90deg); }
+      .arch-arrow.down { transform: none; }
+      .pipeline-step { gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ Hero ═══ -->
+  <div class="hero">
+    <span class="hero-badge">Open Source &middot; Local-First &middot; Zero Cost</span>
+    <h1>ObsLens</h1>
+    <p>A developer observability platform that collects your logs, metrics, and traces — then lets you explore them through a beautiful dashboard. All running on your machine.</p>
+    <a href="#quickstart" class="hero-cta">Get Started &rarr;</a>
+  </div>
+
+  <!-- ═══ What Is Observability? ═══ -->
+  <section>
+    <div class="container">
+      <span class="section-label">The Big Picture</span>
+      <h2 class="section-title">What does this platform do?</h2>
+      <p class="section-desc">Think of ObsLens as a window into your running applications. Instead of adding <code>console.log</code> everywhere, your apps send structured data about what they're doing — and ObsLens organizes, stores, and visualizes all of it.</p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon" style="background: var(--blue-bg);">&#128203;</div>
+          <h3>Logs</h3>
+          <p>Every message your application writes — errors, warnings, info — gets collected, searchable, and filterable. Find that one error needle in a haystack of millions of log lines.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background: var(--purple-bg);">&#128279;</div>
+          <h3>Distributed Traces</h3>
+          <p>When a user clicks a button, the request might touch 5 different services. Traces stitch that entire journey together into a visual timeline, so you can see exactly where time is spent.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background: var(--green-bg);">&#128200;</div>
+          <h3>Metrics</h3>
+          <p>Numbers that change over time — request counts, response times, error rates, CPU usage. Metrics tell you the health of your system at a glance through charts and graphs.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background: var(--red-bg);">&#128276;</div>
+          <h3>Alerts</h3>
+          <p>Set rules like "tell me if error rate goes above 5%" and ObsLens will watch your data and notify you when something goes wrong — before your users notice.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background: var(--amber-bg);">&#128202;</div>
+          <h3>Dashboards</h3>
+          <p>Build custom views that combine multiple charts and tables into one screen. Create a dashboard for each team or service to monitor what matters most to them.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background: var(--cyan-bg);">&#128230;</div>
+          <h3>Simple SDK</h3>
+          <p>Adding observability to your app takes just two lines of code. The SDK automatically captures most data for you — no manual work needed for common frameworks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Architecture ═══ -->
+  <section>
+    <div class="container">
+      <span class="section-label">Architecture</span>
+      <h2 class="section-title">How the pieces fit together</h2>
+      <p class="section-desc">Data flows from your applications through a pipeline of collection, buffering, storage, and visualization. Here's the map.</p>
+
+      <div class="arch-diagram">
+        <!-- Row 1: Applications -->
+        <div class="arch-row">
+          <div class="arch-node app">&#9883; Your Applications<br><small style="opacity:0.7">with @obs/sdk</small></div>
+        </div>
+        <div class="arch-label">send telemetry via OTLP</div>
+        <div class="arch-arrow down">&darr;</div>
+
+        <!-- Row 2: Collector -->
+        <div class="arch-row">
+          <div class="arch-node collector">&#9881; OTel Collector<br><small style="opacity:0.7">gateway</small></div>
+        </div>
+        <div class="arch-label">batches, processes, and routes data</div>
+        <div class="arch-arrow down">&darr;</div>
+
+        <!-- Row 3: Split -->
+        <div class="arch-row">
+          <div class="arch-node broker">&#9889; Redpanda<br><small style="opacity:0.7">message broker</small></div>
+          <div class="arch-arrow">&amp;</div>
+          <div class="arch-node storage">&#128202; VictoriaMetrics<br><small style="opacity:0.7">metrics database</small></div>
+        </div>
+        <div class="arch-label">logs &amp; traces go to Redpanda &bull; metrics go directly to VictoriaMetrics</div>
+        <div class="arch-arrow down">&darr;</div>
+
+        <!-- Row 4: Consumer + Storage -->
+        <div class="arch-row">
+          <div class="arch-node service">&#9881; Consumer<br><small style="opacity:0.7">batch writer</small></div>
+          <div class="arch-arrow">&rarr;</div>
+          <div class="arch-node storage">&#128451; ClickHouse<br><small style="opacity:0.7">logs &amp; traces DB</small></div>
+        </div>
+        <div class="arch-label">reads from Redpanda, batch-inserts every 5 seconds</div>
+        <div class="arch-arrow down">&darr;</div>
+
+        <!-- Row 5: Services -->
+        <div class="arch-row">
+          <div class="arch-node service">&#128269; Query Service<br><small style="opacity:0.7">REST API</small></div>
+          <div class="arch-node service">&#128276; Alert Service<br><small style="opacity:0.7">rule evaluator</small></div>
+        </div>
+        <div class="arch-label">read from databases, serve the dashboard</div>
+        <div class="arch-arrow down">&darr;</div>
+
+        <!-- Row 6: UI -->
+        <div class="arch-row">
+          <div class="arch-node ui">&#127912; React Dashboard<br><small style="opacity:0.7">localhost:3000</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Pipeline Deep Dive ═══ -->
+  <section>
+    <div class="container">
+      <span class="section-label">Workflow</span>
+      <h2 class="section-title">The data journey, step by step</h2>
+      <p class="section-desc">From the moment your application does something interesting to the moment you see it on your screen — here's every step along the way.</p>
+
+      <div class="pipeline">
+
+        <div class="pipeline-step">
+          <div class="step-icon" style="background: var(--brand-glow); border: 1px solid rgba(99,102,241,0.3);">&#128187;</div>
+          <div class="step-content">
+            <h3>1. Your App Generates Telemetry</h3>
+            <p>When your application handles a request, the SDK automatically captures what happened: how long it took, which services were called, any errors that occurred, and log messages you write. This happens in the background with near-zero overhead.</p>
+            <span class="step-tech"><span class="dot" style="background: var(--brand);"></span> @obs/sdk &middot; OpenTelemetry</span>
+          </div>
+        </div>
+
+        <div class="pipeline-step">
+          <div class="step-icon" style="background: var(--cyan-bg); border: 1px solid rgba(34,211,238,0.3);">&#128225;</div>
+          <div class="step-content">
+            <h3>2. Data Arrives at the Collector</h3>
+            <p>Your app sends data over the network to the OpenTelemetry Collector — a central hub that receives telemetry from all your services. The collector groups small messages into larger batches (more efficient) and adds useful metadata.</p>
+            <span class="step-tech"><span class="dot" style="background: var(--cyan);"></span> OpenTelemetry Collector &middot; OTLP protocol</span>
+          </div>
+        </div>
+
+        <div class="pipeline-step">
+          <div class="step-icon" style="background: var(--amber-bg); border: 1px solid rgba(251,191,36,0.3);">&#128230;</div>
+          <div class="step-content">
+            <h3>3. Messages are Queued for Safety</h3>
+            <p>The collector places logs and traces onto a message queue (Redpanda). Think of it as a conveyor belt — even if the database is busy for a moment, no data gets lost. Metrics take a shortcut and go directly to VictoriaMetrics for real-time availability.</p>
+            <span class="step-tech"><span class="dot" style="background: var(--amber);"></span> Redpanda (Kafka-compatible)</span>
+          </div>
+        </div>
+
+        <div class="pipeline-step">
+          <div class="step-icon" style="background: var(--green-bg); border: 1px solid rgba(52,211,153,0.3);">&#128451;</div>
+          <div class="step-content">
+            <h3>4. Consumer Writes to Storage</h3>
+            <p>A consumer service reads from the message queue and efficiently batch-inserts data into the databases. Logs and traces go to ClickHouse (a high-compression columnar database perfect for searching). Metrics are already in VictoriaMetrics from step 3.</p>
+            <span class="step-tech"><span class="dot" style="background: var(--green);"></span> ClickHouse &middot; VictoriaMetrics</span>
+          </div>
+        </div>
+
+        <div class="pipeline-step">
+          <div class="step-icon" style="background: var(--blue-bg); border: 1px solid rgba(96,165,250,0.3);">&#128269;</div>
+          <div class="step-content">
+            <h3>5. Query Service Makes Data Accessible</h3>
+            <p>The Query Service provides a clean REST API that the dashboard calls. It translates your searches ("show me all errors from the payment service in the last hour") into optimized database queries and returns the results.</p>
+            <span class="step-tech"><span class="dot" style="background: var(--blue);"></span> Fastify &middot; REST API &middot; PromQL</span>
+          </div>
+        </div>
+
+        <div class="pipeline-step">
+          <div class="step-icon" style="background: var(--red-bg); border: 1px solid rgba(248,113,113,0.3);">&#128276;</div>
+          <div class="step-content">
+            <h3>6. Alert Service Watches for Problems</h3>
+            <p>Every 30 seconds, the Alert Service checks your rules against the data. "Is the error rate above 5%?" "Are there more than 100 failed logins?" When a condition is met, it fires a notification so you know immediately.</p>
+            <span class="step-tech"><span class="dot" style="background: var(--red);"></span> Rule evaluator &middot; Webhook notifications</span>
+          </div>
+        </div>
+
+        <div class="pipeline-step">
+          <div class="step-icon" style="background: var(--purple-bg); border: 1px solid rgba(167,139,250,0.3);">&#127912;</div>
+          <div class="step-content">
+            <h3>7. You Explore on the Dashboard</h3>
+            <p>The React dashboard ties everything together. Browse logs, click into a trace to see its waterfall timeline, chart metrics with PromQL, manage your alert rules, and build custom dashboards with drag-and-drop widgets.</p>
+            <span class="step-tech"><span class="dot" style="background: var(--purple);"></span> React &middot; Tailwind CSS &middot; Recharts</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SDK ═══ -->
+  <section>
+    <div class="container">
+      <span class="section-label">Developer Experience</span>
+      <h2 class="section-title">Add observability in two lines</h2>
+      <p class="section-desc">The SDK wraps OpenTelemetry into a simple, batteries-included package. Initialize once and your app automatically captures HTTP requests, database calls, and more.</p>
+
+      <div class="code-block">
+<span class="cmt">// Initialize once at the top of your app</span>
+<span class="kw">import</span> { <span class="fn">init</span>, <span class="fn">logger</span>, <span class="fn">metrics</span>, <span class="fn">tracer</span> } <span class="kw">from</span> <span class="str">"@obs/sdk"</span>;
+
+<span class="fn">init</span>({ <span class="obj">serviceName</span>: <span class="str">"my-service"</span> });
+
+<span class="cmt">// That's it! Now use the helpers anywhere:</span>
+<span class="fn">logger</span>.<span class="fn">info</span>(<span class="str">"User signed up"</span>, { <span class="obj">userId</span>: <span class="str">"123"</span> });
+
+<span class="kw">const</span> counter = <span class="fn">metrics</span>.<span class="fn">counter</span>(<span class="str">"signups.total"</span>);
+counter.<span class="fn">add</span>(<span class="num">1</span>);
+
+<span class="kw">await</span> <span class="fn">tracer</span>.<span class="fn">withSpan</span>(<span class="str">"send-welcome-email"</span>, <span class="kw">async</span> (span) => {
+  <span class="cmt">// ... your code here — span auto-records duration &amp; errors</span>
+});
+      </div>
+
+      <div class="sdk-grid">
+        <div class="sdk-card">
+          <h4>&#128203; logger</h4>
+          <p>Structured logging that automatically links to the current trace. Find the exact log for a specific request.</p>
+          <code>logger.error("Payment failed", {
+  orderId: "456",
+  reason: "timeout"
+});</code>
+        </div>
+        <div class="sdk-card">
+          <h4>&#128200; metrics</h4>
+          <p>Create counters, gauges, and histograms to track numbers over time. Query them later with PromQL.</p>
+          <code>const latency = metrics.histogram(
+  "request.duration_ms"
+);
+latency.record(42.5, { path: "/api" });</code>
+        </div>
+        <div class="sdk-card">
+          <h4>&#128279; tracer</h4>
+          <p>Create custom spans for business logic. Most HTTP/DB tracing is automatic — use this for important operations.</p>
+          <code>await tracer.withSpan("checkout",
+  async (span) => {
+    span.setAttributes({ cartSize: 3 });
+    // auto-captures errors & duration
+  }
+);</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Tech Stack & Decisions ═══ -->
+  <section>
+    <div class="container">
+      <span class="section-label">Under the Hood</span>
+      <h2 class="section-title">Technology choices and why</h2>
+      <p class="section-desc">Every component was chosen for a reason — optimized for running locally with minimal resources while still being production-quality.</p>
+
+      <div class="tech-grid" style="margin-bottom: 40px;">
+        <div class="tech-item">
+          <div class="tech-icon" style="background: var(--green-bg);">&#128451;</div>
+          <div>
+            <div class="tech-name">ClickHouse</div>
+            <div class="tech-role">Logs & traces storage</div>
+          </div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon" style="background: var(--green-bg);">&#128200;</div>
+          <div>
+            <div class="tech-name">VictoriaMetrics</div>
+            <div class="tech-role">Metrics storage</div>
+          </div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon" style="background: var(--amber-bg);">&#9889;</div>
+          <div>
+            <div class="tech-name">Redpanda</div>
+            <div class="tech-role">Message broker</div>
+          </div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon" style="background: var(--cyan-bg);">&#9881;</div>
+          <div>
+            <div class="tech-name">OTel Collector</div>
+            <div class="tech-role">Telemetry gateway</div>
+          </div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon" style="background: var(--blue-bg);">&#9889;</div>
+          <div>
+            <div class="tech-name">Fastify</div>
+            <div class="tech-role">Backend APIs</div>
+          </div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon" style="background: var(--purple-bg);">&#9883;</div>
+          <div>
+            <div class="tech-name">React + Vite</div>
+            <div class="tech-role">Dashboard UI</div>
+          </div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon" style="background: var(--brand-glow);">&#128230;</div>
+          <div>
+            <div class="tech-name">TypeScript</div>
+            <div class="tech-role">All code, end to end</div>
+          </div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-icon" style="background: var(--red-bg);">&#128011;</div>
+          <div>
+            <div class="tech-name">Docker Compose</div>
+            <div class="tech-role">Local infrastructure</div>
+          </div>
+        </div>
+      </div>
+
+      <table class="decision-table">
+        <thead>
+          <tr>
+            <th style="width: 30%;">Decision</th>
+            <th>Why We Chose It</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Redpanda over Kafka</td>
+            <td>Same API, but runs as a single binary with much lower memory usage — perfect for running on a laptop without burning through resources.</td>
+          </tr>
+          <tr>
+            <td>ClickHouse for logs & traces</td>
+            <td>Columnar storage compresses log data to 1/10th the size of Elasticsearch. Searching through millions of logs is fast because it only reads the columns you ask about.</td>
+          </tr>
+          <tr>
+            <td>VictoriaMetrics for metrics</td>
+            <td>Speaks the same language as Prometheus (PromQL), but compresses data to ~1 byte per data point and uses very little RAM. Drop-in compatible.</td>
+          </tr>
+          <tr>
+            <td>OTel Collector as the hub</td>
+            <td>Industry standard, vendor-neutral. Your apps talk one protocol (OTLP), and the collector handles routing to different backends. Change storage without changing app code.</td>
+          </tr>
+          <tr>
+            <td>Fastify for backend services</td>
+            <td>2x faster than Express with built-in JSON schema validation. TypeScript-first, lightweight, and battle-tested in production.</td>
+          </tr>
+          <tr>
+            <td>pnpm + Turborepo</td>
+            <td>Monorepo that installs fast and runs tasks in parallel. Shared types between frontend and backend catch bugs at compile time, not in production.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══ Quickstart ═══ -->
+  <section id="quickstart">
+    <div class="container">
+      <span class="section-label">Get Started</span>
+      <h2 class="section-title">Running locally in 5 steps</h2>
+      <p class="section-desc">Everything runs on your machine. No cloud accounts, no API keys, no credit cards. Just Docker and Node.js.</p>
+
+      <div class="steps-list">
+        <div class="qs-step">
+          <div class="qs-number">1</div>
+          <div class="qs-content">
+            <h4>Install dependencies</h4>
+            <p>Clone the repository and install all packages across the monorepo.</p>
+            <span class="qs-cmd">pnpm install</span>
+          </div>
+        </div>
+
+        <div class="qs-step">
+          <div class="qs-number">2</div>
+          <div class="qs-content">
+            <h4>Start infrastructure</h4>
+            <p>This boots up Redpanda, ClickHouse, VictoriaMetrics, and the OTel Collector in Docker containers.</p>
+            <span class="qs-cmd">make infra</span>
+          </div>
+        </div>
+
+        <div class="qs-step">
+          <div class="qs-number">3</div>
+          <div class="qs-content">
+            <h4>Start all services</h4>
+            <p>Launches the ingest service, query service, alert service, and the React dashboard — all with hot reload.</p>
+            <span class="qs-cmd">make dev</span>
+          </div>
+        </div>
+
+        <div class="qs-step">
+          <div class="qs-number">4</div>
+          <div class="qs-content">
+            <h4>Run the demo app &amp; generate traffic</h4>
+            <p>The demo app simulates a real service sending telemetry. The load generator creates realistic request patterns with successes, errors, and slow responses.</p>
+            <span class="qs-cmd">make demo</span>
+            <br><br>
+            <span class="qs-cmd">pnpm --filter @obs/demo-app load</span>
+          </div>
+        </div>
+
+        <div class="qs-step">
+          <div class="qs-number">5</div>
+          <div class="qs-content">
+            <h4>Open the dashboard</h4>
+            <p>Visit your browser and start exploring your data — logs, traces, metrics, alerts, and dashboards are all there.</p>
+            <span class="qs-cmd">http://localhost:3000</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 48px; padding: 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;">
+        <h4 style="font-size: 15px; margin-bottom: 8px;">&#128011; Prefer Docker only? No local Node.js needed.</h4>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 12px;">Run the entire platform — all services and infrastructure — in containers with a single command:</p>
+        <span class="qs-cmd">docker compose up --build</span>
+      </div>
+
+      <div style="margin-top: 20px; padding: 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;">
+        <h4 style="font-size: 15px; margin-bottom: 12px;">&#128736; Other useful commands</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 8px;">
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+            <span style="font-size: 13px; color: var(--text-muted);">Type-check everything</span>
+            <span class="qs-cmd" style="padding: 4px 10px; font-size: 12px;">make typecheck</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+            <span style="font-size: 13px; color: var(--text-muted);">Run tests</span>
+            <span class="qs-cmd" style="padding: 4px 10px; font-size: 12px;">make test</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+            <span style="font-size: 13px; color: var(--text-muted);">Stop infrastructure</span>
+            <span class="qs-cmd" style="padding: 4px 10px; font-size: 12px;">make infra-down</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+            <span style="font-size: 13px; color: var(--text-muted);">Full reset (erase data)</span>
+            <span class="qs-cmd" style="padding: 4px 10px; font-size: 12px;">make reset</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Project Structure ═══ -->
+  <section>
+    <div class="container">
+      <span class="section-label">Organization</span>
+      <h2 class="section-title">Project structure</h2>
+      <p class="section-desc">A monorepo with clearly separated services and shared packages. Each piece has a single responsibility.</p>
+
+      <div class="code-block" style="font-size: 13px; line-height: 2;">
+observability-platform/
+├── <span class="fn">apps/</span>
+│   ├── <span class="obj">web/</span>              <span class="cmt"># React dashboard — what you see at localhost:3000</span>
+│   ├── <span class="obj">query-service/</span>    <span class="cmt"># REST API that reads from the databases</span>
+│   ├── <span class="obj">alert-service/</span>    <span class="cmt"># Evaluates alert rules on a schedule</span>
+│   ├── <span class="obj">ingest-service/</span>   <span class="cmt"># Receives data + writes it to storage</span>
+│   └── <span class="obj">demo-app/</span>         <span class="cmt"># Sample app that generates example data</span>
+├── <span class="fn">packages/</span>
+│   ├── <span class="obj">sdk/</span>              <span class="cmt"># The SDK your apps import</span>
+│   └── <span class="obj">shared/</span>           <span class="cmt"># TypeScript types shared by all services</span>
+├── <span class="fn">infra/</span>                <span class="cmt"># Database schemas &amp; collector config</span>
+├── <span class="str">docker-compose.yml</span>    <span class="cmt"># Run the whole stack in Docker</span>
+└── <span class="str">docker-compose.dev.yml</span> <span class="cmt"># Infrastructure only (for local dev)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Footer ═══ -->
+  <footer>
+    <div class="container">
+      <p style="margin-bottom: 8px;"><strong>ObsLens</strong> &mdash; Developer Observability Platform</p>
+      <p>Built with TypeScript, React, Fastify, ClickHouse, VictoriaMetrics, and OpenTelemetry.</p>
+      <p style="margin-top: 8px;">Open source &middot; Runs locally &middot; Zero cost</p>
+    </div>
+  </footer>
+
+</body>
+</html>
