@@ -18,7 +18,7 @@ processors:
 
 exporters:
   kafka/logs:
-    protocol_version: "3.5.0"
+    protocol_version: "2.1.0"
     brokers:
       - redpanda:9092
     topic: obs.logs
@@ -27,7 +27,7 @@ exporters:
       full: false
 
   kafka/traces:
-    protocol_version: "3.5.0"
+    protocol_version: "2.1.0"
     brokers:
       - redpanda:9092
     topic: obs.traces
@@ -36,7 +36,7 @@ exporters:
       full: false
 
   kafka/metrics:
-    protocol_version: "3.5.0"
+    protocol_version: "2.1.0"
     brokers:
       - redpanda:9092
     topic: obs.metrics

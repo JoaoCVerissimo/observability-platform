@@ -4,6 +4,15 @@ import type { AlertRule, CreateAlertRuleInput } from "@obs/shared";
 
 let client: ClickHouseClient | null = null;
 
+function toClickHouseDateTime(iso?: string): string {
+  const s = iso ?? new Date().toISOString();
+  return s.replace("T", " ").replace("Z", "").replace(/\.\d+$/, "");
+}
+
+function nowClickHouse(): string {
+  return toClickHouseDateTime(new Date().toISOString());
+}
+
 function getClickHouse(): ClickHouseClient {
   if (!client) {
     client = createClient({
@@ -41,7 +50,7 @@ export async function getRule(id: string): Promise<AlertRule | null> {
 export async function createRule(input: CreateAlertRuleInput): Promise<AlertRule> {
   const ch = getClickHouse();
   const id = crypto.randomUUID();
-  const now = new Date().toISOString();
+  const now = nowClickHouse();
 
   await ch.insert({
     table: "alert_rules",
@@ -92,7 +101,7 @@ export async function updateRule(
   if (!existing) return null;
 
   const ch = getClickHouse();
-  const now = new Date().toISOString();
+  const now = nowClickHouse();
 
   const updated = {
     id,
@@ -107,7 +116,7 @@ export async function updateRule(
     severity: input.severity ?? existing.severity,
     labels: input.labels ?? existing.labels,
     enabled: input.enabled !== undefined ? (input.enabled ? 1 : 0) : (existing.enabled ? 1 : 0),
-    created_at: existing.createdAt,
+    created_at: toClickHouseDateTime(existing.createdAt),
     updated_at: now,
   };
 
@@ -142,8 +151,8 @@ export async function insertAlertEvent(event: {
       {
         id: crypto.randomUUID(),
         rule_id: event.ruleId,
-        fired_at: new Date().toISOString(),
-        resolved_at: event.status === "resolved" ? new Date().toISOString() : null,
+        fired_at: nowClickHouse(),
+        resolved_at: event.status === "resolved" ? nowClickHouse() : null,
         status: event.status,
         value: event.value,
         labels: event.labels,

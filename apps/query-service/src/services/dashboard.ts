@@ -1,6 +1,11 @@
 import { getClickHouse } from "./clickhouse.js";
 import type { Dashboard, CreateDashboardInput, UpdateDashboardInput } from "@obs/shared";
 
+function toClickHouseDateTime(iso?: string): string {
+  const s = iso ?? new Date().toISOString();
+  return s.replace("T", " ").replace("Z", "").replace(/\.\d+$/, "");
+}
+
 export async function listDashboards(): Promise<Dashboard[]> {
   const ch = getClickHouse();
   const result = await ch.query({
@@ -26,7 +31,7 @@ export async function getDashboard(id: string): Promise<Dashboard | null> {
 export async function createDashboard(input: CreateDashboardInput): Promise<Dashboard> {
   const ch = getClickHouse();
   const id = crypto.randomUUID();
-  const now = new Date().toISOString();
+  const now = toClickHouseDateTime();
 
   await ch.insert({
     table: "dashboards",
@@ -61,14 +66,14 @@ export async function updateDashboard(
   if (!existing) return null;
 
   const ch = getClickHouse();
-  const now = new Date().toISOString();
+  const now = toClickHouseDateTime();
 
   const updated = {
     id,
     title: input.title ?? existing.title,
     description: input.description ?? existing.description,
     widgets: JSON.stringify(input.widgets ?? existing.widgets),
-    created_at: existing.createdAt,
+    created_at: toClickHouseDateTime(existing.createdAt),
     updated_at: now,
   };
 

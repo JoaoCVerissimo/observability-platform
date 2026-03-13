@@ -30,11 +30,17 @@ export function buildWhereClause(
   from: string,
   to: string
 ): { where: string; params: Record<string, string | number> } {
+  const toClickHouseDate = (iso: string) =>
+    iso.replace("T", " ").replace("Z", "");
+
   const conditions: string[] = [
-    `${timeColumn} >= {from:String}`,
-    `${timeColumn} <= {to:String}`,
+    `${timeColumn} >= {from:DateTime64(9, 'UTC')}`,
+    `${timeColumn} <= {to:DateTime64(9, 'UTC')}`,
   ];
-  const params: Record<string, string | number> = { from, to };
+  const params: Record<string, string | number> = {
+    from: toClickHouseDate(from),
+    to: toClickHouseDate(to),
+  };
 
   for (const filter of filters) {
     if (filter.value !== undefined && filter.value !== "") {

@@ -24,8 +24,9 @@ export function formatTimestamp(ts: string): string {
 }
 
 export function timeRangeToParams(range: string): { from: string; to: string } {
-  const now = new Date();
-  const to = now.toISOString();
+  // Round to 10-second intervals to keep React Query keys stable across renders
+  const nowMs = Math.floor(Date.now() / 10_000) * 10_000;
+  const to = new Date(nowMs).toISOString();
 
   const durations: Record<string, number> = {
     "15m": 15 * 60 * 1000,
@@ -36,6 +37,6 @@ export function timeRangeToParams(range: string): { from: string; to: string } {
   };
 
   const ms = durations[range] ?? durations["1h"];
-  const from = new Date(now.getTime() - ms).toISOString();
+  const from = new Date(nowMs - ms).toISOString();
   return { from, to };
 }
